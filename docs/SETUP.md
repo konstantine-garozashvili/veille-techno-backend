@@ -81,6 +81,7 @@ How to run the NestJS API locally (development):
    Database connection verified (SELECT 1)
    [NestApplication] Nest application successfully started
    HTTP server listening on http://localhost:3000
+   Swagger UI available at http://localhost:3000/api
 
 Technical considerations:
 - synchronize: true is enabled for faster local development and will be disabled in production in favor of migrations.
@@ -88,10 +89,10 @@ Technical considerations:
 - The uuid-ossp extension is created by database/init.sql; entities can use type: 'uuid' with default: () => "uuid_generate_v4()".
 - PowerShell note: use $env:VAR="value" and semicolons to chain; the CMD syntax set "VAR=value" && ... is not valid in PowerShell.
 - IPv6 addresses like http://[::1]:3000 in logs are normal; http://localhost:3000 works the same.
+- Swagger is exposed at /api and uses French texts for UI (title, description, auth description) while keeping code/logs in English to enforce language separation.
 
 ## Next steps (updated)
 
-- Add Swagger and OpenAPI config and expose Swagger UI at /api.
 - Add a /health/db endpoint that pings the database and returns an explicit status JSON.
 - Create a Dockerfile for the NestJS app and wire a nest service into docker-compose with dependencies on postgres and a proper healthcheck/wait strategy.
 - Scaffold domain modules and entities: Auth, Users, Lists, Cards; define relations and CRUD endpoints with validation and guards.
