@@ -91,9 +91,25 @@ Technical considerations:
 - IPv6 addresses like http://[::1]:3000 in logs are normal; http://localhost:3000 works the same.
 - Swagger is exposed at /api and uses French texts for UI (title, description, auth description) while keeping code/logs in English to enforce language separation.
 
+## Latest updates — Health endpoint /health/db (2025-09-15)
+
+What we implemented:
+- Added HealthModule (controller + service) with GET /health/db.
+- Controller annotated with French Swagger metadata (summary/description) per language policy.
+- Service uses TypeORM DataSource to run SELECT 1 and returns { status: "ok", details: { database: "up" } } on success.
+
+How to verify locally:
+1) Ensure the NestJS dev server is running (see previous section).
+2) In a terminal, run: curl http://localhost:3000/health/db
+3) Expected JSON response: {"status":"ok","details":{"database":"up"}}
+4) You should also see the /health/db endpoint listed in Swagger at http://localhost:3000/api.
+
+Technical considerations:
+- The HealthModule is registered in AppModule so it loads with the app.
+- This endpoint is intentionally unauthenticated for now to simplify readiness checks; we can add auth later if needed and keep an unauthenticated /health/ready for infra.
+
 ## Next steps (updated)
 
-- Add a /health/db endpoint that pings the database and returns an explicit status JSON.
 - Create a Dockerfile for the NestJS app and wire a nest service into docker-compose with dependencies on postgres and a proper healthcheck/wait strategy.
 - Scaffold domain modules and entities: Auth, Users, Lists, Cards; define relations and CRUD endpoints with validation and guards.
 - Introduce environment configuration via @nestjs/config with schema validation and .env files per environment.
