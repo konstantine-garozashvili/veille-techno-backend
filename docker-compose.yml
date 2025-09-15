@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: kanban_api
+      POSTGRES_USER: kanban_user
+      POSTGRES_PASSWORD: kanban_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - kanban-network
+
+  # NestJS Implementation
+  nestjs-api:
+    build:
+      context: ./nestjs-implementation
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=kanban_api
+      - DATABASE_USER=kanban_user
+      - DATABASE_PASSWORD=kanban_password
+    depends_on:
+      - postgres
+    volumes:
+      - ./nestjs-implementation:/app
+      - /app/node_modules
+    networks:
+      - kanban-network
+
+  # Symfony Implementation
+  symfony-api:
+    build:
+      context: ./symfony-implementation
+      dockerfile: Dockerfile
+    ports:
+      - "3002:8000"
+    environment:
+      - APP_ENV=dev
+      - DATABASE_URL=postgresql://kanban_user:kanban_password@postgres:5432/kanban_api
+    depends_on:
+      - postgres
+    volumes:
+      - ./symfony-implementation:/var/www/html
+    networks:
+      - kanban-network
+
+  # Spring Boot Implementation
+  springboot-api:
+    build:
+      context: ./springboot-implementation
+      dockerfile: Dockerfile
+    ports:
+      - "3003:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/kanban_api
+      - SPRING_DATASOURCE_USERNAME=kanban_user
+      - SPRING_DATASOURCE_PASSWORD=kanban_password
+    depends_on:
+      - postgres
+    volumes:
+      - ./springboot-implementation:/app
+    networks:
+      - kanban-network
+
+  # Nginx reverse proxy for API documentation and testing
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+      - ./docs:/usr/share/nginx/html/docs
+    depends_on:
+      - nestjs-api
+      - symfony-api
+      - springboot-api
+    networks:
+      - kanban-network
+
+volumes:
+  postgres_data:
+
+networks:
+  kanban-network:
+    driver: bridge
