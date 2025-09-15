@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { DataSource } from 'typeorm';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { DataSource } from 'typeorm';
       synchronize: true,
       logging: ['error', 'schema'],
     }),
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
