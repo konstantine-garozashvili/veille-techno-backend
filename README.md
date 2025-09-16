@@ -244,4 +244,114 @@ veille-techno-backend/
 
 ---
 
-*This README will be updated throughout the project with detailed findings, implementation notes, and comparative analysis.*
+## Démarrage rapide avec Docker Compose (développement)
+
+Si vous souhaitez tout lancer via Docker Compose (PostgreSQL + API NestJS):
+
+1) Prérequis
+- Docker Desktop installé et démarré
+- Le fichier Dockerfile est présent dans `./nestjs-implementation/` (créé)
+
+2) Lancer les services
+- Depuis la racine du repo:
+  - `docker compose build nestjs-api`
+  - `docker compose up -d db nestjs-api`
+
+3) Points d’accès
+- API NestJS: http://localhost:3001/
+- Swagger (FR): http://localhost:3001/api
+- Base de données Postgres: `localhost:5432` (user: `kanban_user`, db: `kanban_api`)
+
+4) Arrêt et nettoyage
+- Arrêter: `docker compose stop`
+- Supprimer conteneurs: `docker compose down`
+
+Notes
+- Le service `nestjs-api` mappe le port interne 3000 vers 3001 sur l’hôte (cf. docker-compose.yml).
+- Dans l’environnement local sans Docker, l’API écoute sur 3000; via Compose, utilisez 3001.
+- Le service Nginx est optionnel et peut rester commenté tant que vous n’orchestrer pas plusieurs backends.
+
+## Correction de la note sur la racine API
+
+- Le endpoint racine renvoie bien la chaîne "Hello World!" via GET /. Vérifiez sur:
+  - Local (npm start): http://localhost:3000/
+  - Docker Compose: http://localhost:3001/
+
+Reportez-vous aussi à docs/SETUP.md pour des notes plus détaillées.
+
+Configuration de l'environnement (.env)
+- Créez un fichier .env à la racine avec par exemple:
+  PORT=3000
+  NODE_ENV=development
+  JWT_SECRET=change_me
+  DB_HOST=localhost
+  DB_PORT=5432
+  DB_USER=postgres
+  DB_PASS=postgres
+  DB_NAME=kanban_dev
+
+Installation et lancement
+- Installer les dépendances:
+  npm install
+- Démarrer en développement (watch):
+  npm run start:dev
+- Build TypeScript → JavaScript:
+  npm run build
+- Démarrer en production (sur dist/):
+  npm run start:prod
+
+Documentation et santé de l'API
+- Swagger UI: http://localhost:3000/api
+- OpenAPI JSON: http://localhost:3000/api-json
+- Health check DB: http://localhost:3000/health/db → { status: "ok" }
+- Note: la racine / retourne 404 par conception tant que le contrôleur root n'est pas câblé
+
+Conseil TypeScript
+- Le projet utilise "module": "CommonJS" et "moduleResolution": "node" pour éviter les frictions IDE.
+- Pour un type-check de build (sans tests): npx tsc -p tsconfig.build.json --noEmit
+
+# API — Endpoints principaux
+
+Auth
+- POST /auth/register → crée un utilisateur (public), renvoie l'utilisateur sans passwordHash
+- POST /auth/login → renvoie { access_token, user }
+
+Users (protégés par JWT sauf création publique)
+- GET /users → liste des utilisateurs (401 si non authentifié)
+- GET /users/:id → détail d'un utilisateur
+- PATCH /users/:id → mise à jour (ex: rôles, mot de passe)
+- DELETE /users/:id → suppression logique ou dure selon implémentation
+- POST /users → création publique d'utilisateur
+
+Health
+- GET /health/db → état de la base de données
+
+# Sécurité
+- Authentification via JWT (Bearer token) avec stratégie Passport JWT.
+- Les endpoints Users sont protégés, à l'exception de la création publique si activée.
+- Ne jamais committer de secrets: configurez JWT_SECRET et les variables DB via .env.
+- synchronize: true doit rester cantonné au développement; préférez les migrations pour les environnements partagés/CI/prod.
+
+# Tests rapides (Smoke tests)
+- Voir docs/SETUP.md pour une checklist détaillée et des commandes prêtes à l'emploi (PowerShell/cURL).
+- Cas attendus: 401 sans token, 409 sur inscription dupliquée, 404 après suppression.
+
+# Veille technologique (Synthèse)
+
+NestJS — présentation, avantages et inconvénients (~200 mots)
+NestJS est un framework Node.js orienté vers l'architecture modulaire et inspiré des bonnes pratiques d'Angular (décorateurs, modules, injection de dépendances). Il s'appuie fortement sur TypeScript, encourage une structure claire en couches (controllers, services, modules) et offre une intégration fluide avec des briques courantes (Swagger, validation, cache, WebSockets, microservices). Ses avantages: productivité élevée grâce aux CLIs, écosystème riche (@nestjs/jwt, @nestjs/passport, TypeORM, etc.), documentation soignée, patterns d'entreprise (SOLID), testabilité et extensibilité naturelles. Il facilite la standardisation au sein d'une équipe pluridisciplinaire JavaScript/TypeScript. Parmi les inconvénients: une courbe d'apprentissage due aux abstractions (métadonnées, pipes, guards, interceptors) et à la configuration parfois verbeuse; le surcoût de l'injection de dépendances peut sembler excessif pour de très petits services. De plus, le coupling aux décorateurs et à la réflexion runtime peut compliquer certains cas avancés de typage. Enfin, les performances brutes d'un service Node.js sous Nest peuvent être légèrement en retrait par rapport à un micro-framework minimaliste, mais suffisantes pour la majorité des cas d'usage.
+
+Symfony — présentation, avantages et inconvénients (~200 mots)
+Symfony est un framework PHP mature et modulaire, reconnu pour sa robustesse, sa stabilité et son écosystème professionnel. Il propose une architecture claire (bundles, services, contrôleurs) et un moteur d'injection de dépendances puissant. Ses avantages: conventions éprouvées, excellent support de la communauté et de SensioLabs, nombreux composants réutilisables (HTTP Foundation, Console, Validator), outillage robuste (MakerBundle, Profiler), et intégration facile avec Doctrine ORM. Il brille pour des applications métier complexes, maintenables et sécurisées. Inconvénients: la performance brute en PHP moderne est correcte mais peut nécessiter du tuning (OPcache, cache applicatif) pour des charges élevées; la verbosité de certaines configurations et la courbe d'apprentissage des concepts (événements, autowiring avancé) peuvent ralentir les débuts. Par ailleurs, si l'équipe est principalement orientée JavaScript/TypeScript, le contexte PHP peut introduire une friction outillage/compétences. Malgré cela, Symfony reste un choix premium pour des backends robustes, surtout en contexte européen.
+
+Spring Boot — présentation, avantages et inconvénients (~200 mots)
+Spring Boot est l'accélérateur de l'écosystème Spring pour Java/Kotlin, offrant auto-configuration, starters et une opinion forte pour démarrer rapidement. Avantages: performances et scalabilité excellentes sur la JVM, maturité industrielle, observabilité complète (Actuator), écosystème massif (Spring Security, Data JPA, Cloud), support de patterns modernes (Reactive WebFlux), et outillage de qualité (Gradle/Maven). Il excelle pour des systèmes à forte exigence de robustesse, sécurité et scalabilité. Inconvénients: configuration et compréhension de l'écosystème peuvent être intimidantes; le coût mémoire et le temps de démarrage de la JVM, quoique optimisés, restent supérieurs à Node.js pour des microservices très petits; le développement peut être plus verbeux. Pour une équipe majoritairement JS/TS, le changement de langage ajoute un coût de montée en compétences. Spring reste toutefois une référence pour des plateformes d'entreprise à long terme.
+
+Justification du choix — pourquoi NestJS pour ce projet (~200 mots)
+Nous choisissons NestJS pour aligner la technologie sur les compétences existantes (TypeScript), accélérer la livraison et maximiser la lisibilité/maintenabilité. Le modèle modulaire (modules/controllers/services) épouse naturellement une API Kanban (domaines: auth, users, boards, lists, cards) et facilite l'évolution incrémentale. L'écosystème officiel couvre l'authentification JWT, la validation, la documentation Swagger et l'intégration TypeORM/PostgreSQL avec un minimum de friction. La productivité de l'équipe est renforcée par le CLI, la cohérence des patterns et la testabilité (Jest + Supertest). En outre, Nest propose des chemins de croissance (microservices, CQRS, cache, WebSockets) si les besoins augmentent. Par rapport à Symfony, Nest évite un changement de langage/outillage et tire parti de notre stack frontend. Par rapport à Spring Boot, il réduit la charge cognitive et permet un time-to-first-feature plus court pour une petite équipe. Enfin, la présence d'une communauté active et d'exemples nombreux accélère le troubleshooting et la veille.
+
+# Contribution
+- Respectez la structure du projet et créez une issue GitHub avant toute nouvelle fonctionnalité/correctif.
+- Nommez les branches: feature/<feature>, fix/<bug>, etc. Ouvrez une Pull Request; pas de push direct sur main.
+- Mettez à jour la documentation (README/SETUP/Swagger) dès que vous ajoutez une fonctionnalité.
+- Ne partagez jamais de secrets, ni de données réelles dans les exemples/fixtures/tests.
