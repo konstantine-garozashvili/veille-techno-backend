@@ -271,3 +271,26 @@ Note Dockerfile NestJS
 - L’UI Swagger est exposée sur /api avec titres/descriptions en français.
 - Local: http://localhost:3000/api
 - Docker Compose: http://localhost:3001/api
+
+## Dernières mises à jour — Stabilisation des tests E2E et documentation Swagger (2025-09-16)
+
+Ce qui a changé
+- Tests E2E: ajout d’un afterEach dans test/app.e2e-spec.ts pour fermer l’application Nest après chaque test (await app.close()). Objectif: éviter l’avertissement Jest « did not exit one second after the test run » dû à des handles ouverts (DataSource, serveurs, etc.).
+- Swagger: amélioration de la documentation de mise à jour utilisateur. Le endpoint PATCH /users/:id est maintenant annoté avec @ApiBody({ type: UpdateUserDto }) afin d’afficher le schéma du payload dans Swagger UI.
+
+Comment vérifier
+- Lancer les tests E2E
+  npm run test:e2e
+  # En cas d’avertissement sur des handles ouverts, utiliser:
+  npm run test:e2e -- --detectOpenHandles
+
+- Vérifier Swagger (locaux)
+  # UI
+  http://localhost:3000/api
+  # JSON brut
+  http://localhost:3000/api-json
+  # Vérification rapide en PowerShell (code 200 attendu)
+  (Invoke-WebRequest -UseBasicParsing -Uri "http://localhost:3000/api" -Method Head).StatusCode
+
+Impact
+- Aucun changement fonctionnel côté runtime; la doc Swagger est plus complète pour PATCH /users/:id et la suite de tests est plus fiable grâce à la fermeture explicite de l’application entre les tests.
