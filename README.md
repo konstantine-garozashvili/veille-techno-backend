@@ -355,3 +355,88 @@ Nous choisissons NestJS pour aligner la technologie sur les compétences existan
 - Nommez les branches: feature/<feature>, fix/<bug>, etc. Ouvrez une Pull Request; pas de push direct sur main.
 - Mettez à jour la documentation (README/SETUP/Swagger) dès que vous ajoutez une fonctionnalité.
 - Ne partagez jamais de secrets, ni de données réelles dans les exemples/fixtures/tests.
+
+## GraphQL — Point d’accès et exemples (NestJS)
+
+Point d’accès
+- Local (npm start): http://localhost:3000/graphql
+- Docker Compose: http://localhost:3001/graphql
+- Remarque: le Playground GraphQL est désactivé (playground: false). Utilisez un client tel que Postman, Insomnia ou Altair. Ajoutez l’en-tête Authorization: Bearer <jeton> pour les opérations protégées.
+
+Schéma (extrait)
+- Types principaux: User, List, Card.
+- Mutations Auth: register(input: CreateUserDto): String (JWT), login(email: String!, password: String!): String (JWT).
+- Listes: queries lists, list(id), et mutations createList(input), updateList(id,input), removeList(id).
+- Cartes: queries cards(listId), card(listId, cardId), et mutations createCard(listId,input), updateCard(listId,cardId,input), removeCard(listId,cardId).
+
+Exemples de requêtes
+1) Authentification
+mutation Register {
+  register(input: { email: "user@example.com", password: "Password123!" })
+}
+
+mutation Login {
+  login(email: "user@example.com", password: "Password123!")
+}
+
+2) Listes
+# Lister toutes les listes
+query AllLists {
+  lists { id title createdAt updatedAt }
+}
+
+# Récupérer une liste par id
+query OneList {
+  list(id: "<listId>") { id title createdAt updatedAt }
+}
+
+# Créer/mettre à jour/supprimer une liste (JWT requis)
+mutation CreateList {
+  createList(input: { title: "Backlog" }) { id title }
+}
+
+mutation UpdateList {
+  updateList(id: "<listId>", input: { title: "To Do" }) { id title }
+}
+
+mutation RemoveList {
+  removeList(id: "<listId>")
+}
+
+3) Cartes (liées à une liste)
+# Lister/consulter
+query CardsInList {
+  cards(listId: "<listId>") { id title description position createdAt updatedAt }
+}
+
+query OneCard {
+  card(listId: "<listId>", cardId: "<cardId>") { id title description position }
+}
+
+# Créer/mettre à jour/supprimer (JWT requis)
+mutation CreateCard {
+  createCard(
+    listId: "<listId>",
+    input: { title: "Implement feature", description: "Steps", position: 0 }
+  ) { id title position }
+}
+
+mutation UpdateCard {
+  updateCard(
+    listId: "<listId>",
+    cardId: "<cardId>",
+    input: { title: "Implement feature - Updated", position: 1 }
+  ) { id title position }
+}
+
+mutation RemoveCard {
+  removeCard(listId: "<listId>", cardId: "<cardId>")
+}
+
+Notes
+- Les DTOs GraphQL appliquent des validations (class-validator):
+  - CreateUserDto: email (format), password (min 8), roles? string[]
+  - CreateListDto: title non vide
+  - Create/UpdateCardDto: title (min 1), description?, position? (>= 0)
+- Swagger documente les endpoints REST; GraphQL n’apparaît pas dans Swagger. Les deux styles (REST + GraphQL) coexistent dans l’API.
+- Flux d’exécution (GraphQL): HTTP → GraphQLModule → Resolvers → Services → TypeORM → PostgreSQL.
