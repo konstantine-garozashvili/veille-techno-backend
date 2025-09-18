@@ -1,98 +1,262 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+# API Kanban Board - NestJS Implementation
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Cette API Kanban Board est développée avec NestJS dans le cadre d'un projet de veille technologique comparant NestJS, Symfony et Spring Boot. L'application fournit une API REST et GraphQL complète pour gérer des tableaux Kanban avec authentification JWT et contrôle d'accès basé sur les rôles.
 
-## Project setup
+## Fonctionnalités
 
-```bash
-$ npm install
-```
+- ✅ **Authentification JWT** avec inscription, connexion et déconnexion
+- ✅ **Gestion des utilisateurs** avec contrôle d'accès basé sur les rôles
+- ✅ **Gestion des listes** Kanban (CRUD complet)
+- ✅ **Gestion des cartes** avec titre, description et statut
+- ✅ **API REST** avec documentation Swagger
+- ✅ **API GraphQL** avec playground intégré
+- ✅ **Blacklist des tokens** pour une déconnexion sécurisée
+- ✅ **Tests e2e** complets
+- ✅ **Conteneurisation Docker**
 
-## Compile and run the project
+## Installation
 
-```bash
-# development
-$ npm run start
+### Prérequis
+- Node.js 20+
+- PostgreSQL 15+
+- Docker & Docker Compose (optionnel)
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Installation locale
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# Cloner le repository
+git clone <repository-url>
+cd nestjs-implementation
+
+# Installer les dépendances
+npm install
+
+# Configurer les variables d'environnement
+cp .env.example .env
+# Éditer .env avec vos paramètres
+
+# Démarrer la base de données (avec Docker)
+docker compose up -d postgres
+
+# Lancer l'application
+npm run start:dev
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Installation avec Docker
 
-## Resources
+```bash
+# Démarrer tous les services
+docker compose up -d
 
-Check out a few resources that may come in handy when working with NestJS:
+# Voir les logs
+docker compose logs -f nestjs-api
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+## Configuration
+
+### Variables d'environnement
+
+Créez un fichier `.env` à la racine du projet :
+
+```env
+# Base de données
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_USER=kanban_user
+DATABASE_PASSWORD=kanban_password
+DATABASE_NAME=kanban_api
+
+# JWT
+JWT_SECRET=your-super-secret-jwt-key
+JWT_EXPIRES_IN=1h
+
+# Application
+PORT=3000
+NODE_ENV=development
+
+# Données de test
+SEED_ADMIN_EMAIL=admin@example.com
+SEED_ADMIN_PASSWORD=Password123!
+```
+
+## Utilisation
+
+### Accès aux services
+
+- **API REST**: http://localhost:3000
+- **Documentation Swagger**: http://localhost:3000/api
+- **GraphQL Playground**: http://localhost:3000/graphql
+
+### Authentification
+
+#### Inscription
+```bash
+curl -X POST http://localhost:3000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "password": "password123"}'
+```
+
+#### Connexion
+```bash
+curl -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "user@example.com", "password": "password123"}'
+```
+
+#### Déconnexion
+```bash
+curl -X POST http://localhost:3000/auth/logout \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### Exemples d'utilisation
+
+#### Créer une liste
+```bash
+curl -X POST http://localhost:3000/lists \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Ma première liste"}'
+```
+
+#### Créer une carte
+```bash
+curl -X POST http://localhost:3000/lists/LIST_ID/cards \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Ma première carte", "description": "Description de la carte"}'
+```
+
+## Tests
+
+```bash
+# Tests unitaires
+npm run test
+
+# Tests e2e
+npm run test:e2e
+
+# Coverage
+npm run test:cov
+
+# Tests avec Docker
+docker compose exec nestjs-api npm run test:e2e
+```
+
+## Architecture
+
+### Structure du projet
+```
+src/
+├── app.module.ts          # Module principal
+├── main.ts                # Point d'entrée
+├── auth/                  # Module d'authentification
+│   ├── auth.controller.ts # Endpoints REST auth
+│   ├── auth.resolver.ts   # Mutations GraphQL auth
+│   ├── auth.service.ts    # Logique métier auth
+│   ├── token-blacklist.service.ts # Gestion blacklist tokens
+│   └── guards/            # Guards JWT
+├── users/                 # Module utilisateurs
+├── lists/                 # Module listes Kanban
+├── cards/                 # Module cartes Kanban
+└── health/                # Health checks
+```
+
+### Sécurité
+
+- **Hachage des mots de passe** avec bcrypt
+- **Tokens JWT** avec expiration configurable
+- **Blacklist des tokens** pour la déconnexion sécurisée
+- **Contrôle d'accès** basé sur les rôles (user/admin)
+- **Validation des données** avec class-validator
+
+## API Endpoints
+
+### Authentification
+- `POST /auth/register` - Inscription
+- `POST /auth/login` - Connexion
+- `POST /auth/logout` - Déconnexion (JWT requis)
+
+### Utilisateurs
+- `GET /users` - Lister les utilisateurs (JWT requis)
+- `GET /users/:id` - Obtenir un utilisateur (JWT requis)
+- `POST /users` - Créer un utilisateur (Admin requis)
+- `PATCH /users/:id` - Modifier un utilisateur (Admin requis)
+- `DELETE /users/:id` - Supprimer un utilisateur (Admin requis)
+
+### Listes
+- `GET /lists` - Lister les listes (JWT requis)
+- `POST /lists` - Créer une liste (JWT requis)
+- `GET /lists/:id` - Obtenir une liste (JWT requis)
+- `PATCH /lists/:id` - Modifier une liste (JWT requis)
+- `DELETE /lists/:id` - Supprimer une liste (JWT requis)
+
+### Cartes
+- `GET /lists/:listId/cards` - Lister les cartes (JWT requis)
+- `POST /lists/:listId/cards` - Créer une carte (JWT requis)
+- `GET /lists/:listId/cards/:cardId` - Obtenir une carte (JWT requis)
+- `PATCH /lists/:listId/cards/:cardId` - Modifier une carte (JWT requis)
+- `DELETE /lists/:listId/cards/:cardId` - Supprimer une carte (JWT requis)
+
+## Développement
+
+### Scripts disponibles
+
+```bash
+# Développement
+npm run start:dev          # Mode watch
+npm run start:debug        # Mode debug
+
+# Build
+npm run build              # Build production
+npm run start:prod         # Démarrer en production
+
+# Tests
+npm run test               # Tests unitaires
+npm run test:watch         # Tests en mode watch
+npm run test:e2e           # Tests end-to-end
+npm run test:cov           # Coverage
+
+# Linting
+npm run lint               # ESLint
+npm run format             # Prettier
+```
+
+### Commandes Docker
+
+```bash
+# Démarrer tous les services
+docker compose up -d
+
+# Redémarrer l'API NestJS
+docker compose restart nestjs-api
+
+# Voir les logs
+docker compose logs -f nestjs-api
+
+# Accéder au conteneur
+docker compose exec nestjs-api sh
+
+# Arrêter tous les services
+docker compose down
+```
+
+## Documentation
+
+- **Documentation d'architecture**: Voir `../ARCHITECTURE_DOCUMENTATION.md`
+- **Documentation de veille**: Voir `../VEILLE_TECHNIQUE.md`
+- **Swagger UI**: http://localhost:3000/api
+- **GraphQL Playground**: http://localhost:3000/graphql
 
 ## Support
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Pour toute question ou problème :
+1. Vérifiez la documentation d'architecture
+2. Consultez les logs avec `docker compose logs -f nestjs-api`
+3. Vérifiez que tous les services sont démarrés avec `docker compose ps`
 
-## Stay in touch
+## Licence
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Ce projet est développé dans un cadre éducatif pour la veille technologique.
