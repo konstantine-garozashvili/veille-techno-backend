@@ -1,5 +1,8 @@
 # Kanban Board API — README (Projet et Documentation)
 
+Projet réalisé par konstantine garozashvili.
+Portfolio: https://konstantine.fr — LinkedIn: https://fr.linkedin.com/in/konstantine-garozashvili
+
 Projet d’API Kanban pour une équipe produit. Le code est en anglais, la documentation en français. L’objectif: livrer une API robuste, documentée (Swagger), testée (e2e), et prête à l’usage via Docker.
 
 Sommaire
