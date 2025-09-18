@@ -8,6 +8,10 @@ import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { ListsModule } from './lists/lists.module'
 import { CardsModule } from './cards/cards.module'
+import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo'
+import { GraphQLModule } from '@nestjs/graphql'
+import { join } from 'path'
+import { ApolloServerPluginLandingPageLocalDefault } from '@apollo/server/plugin/landingPage/default'
 
 @Module({
   imports: [
@@ -21,6 +25,19 @@ import { CardsModule } from './cards/cards.module'
       database: process.env.DB_NAME || process.env.DATABASE_NAME || 'kanban_api',
       autoLoadEntities: true,
       synchronize: true,
+    }),
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      sortSchema: true,
+      // Keep Playground off (deprecated) and use Apollo Sandbox landing page in dev
+      playground: false,
+      introspection: process.env.NODE_ENV !== 'production',
+      csrfPrevention: process.env.NODE_ENV === 'production',
+      plugins: process.env.NODE_ENV !== 'production' ? [ApolloServerPluginLandingPageLocalDefault()] : [],
+      installSubscriptionHandlers: false,
+      context: ({ req }) => ({ req }),
+      path: '/graphql',
     }),
     HealthModule,
     UsersModule,
