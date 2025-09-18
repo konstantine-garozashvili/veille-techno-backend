@@ -23,10 +23,10 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3001:3000"
+    env_file:
+      - ./nestjs-implementation/.env
     environment:
       - NODE_ENV=development
-      - JWT_SECRET=${JWT_SECRET:-dev_secret_change_me}
-      - JWT_EXPIRES_IN=${JWT_EXPIRES_IN:-1h}
       - DATABASE_HOST=postgres
       - DATABASE_PORT=5432
       - DATABASE_NAME=kanban_api
@@ -76,6 +76,32 @@ services:
     networks:
       - kanban-network
 
+  # pgAdmin for PostgreSQL visualization
+  pgadmin:
+    image: dpage/pgadmin4:8
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_SERVER_JSON_FILE: /pgadmin4/servers.json
+      PGADMIN_REPLACE_SERVERS_ON_STARTUP: 'True'
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - kanban-network
+    volumes:
+      - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
+      - ./pgadmin/pgpass:/pgadmin4/pgpass:ro
+      - pgadmin_data:/var/lib/pgadmin
+    user: "root"
+    entrypoint: >
+      /bin/sh -c "\
+      cp -f /pgadmin4/pgpass /var/lib/pgadmin/pgpass && \
+      chmod 600 /var/lib/pgadmin/pgpass && \
+      chown 5050:5050 /var/lib/pgadmin/pgpass && \
+      /entrypoint.sh"
+
   # Nginx reverse proxy for API documentation and testing
   nginx:
     image: nginx:alpine
@@ -93,6 +119,7 @@ services:
 
 volumes:
   postgres_data:
+  pgadmin_data:
 
 networks:
   kanban-network:
