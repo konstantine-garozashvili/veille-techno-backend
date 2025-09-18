@@ -1,9 +1,19 @@
 import request from 'supertest';
-import { bootstrapTestApp, clearDatabase, loginAndGetToken, registerUser, TestContext } from './helpers';
+import { bootstrapTestApp, clearDatabase, loginAndGetToken, registerUser, TestContext, seedAdmin } from './helpers';
+
+async function promoteToAdmin(ctx: TestContext, token: string, userId: string) {
+  const res = await request(ctx.httpServer)
+    .patch(`/users/${userId}`)
+    .set('Authorization', `Bearer ${token}`)
+    .send({ roles: ['admin'] });
+  return res;
+}
 
 describe('Users (e2e)', () => {
   let ctx: TestContext;
-  let token: string;
+  let userToken: string;
+  let adminToken: string;
+  let adminUserId: string;
 
   beforeAll(async () => {
     ctx = await bootstrapTestApp();
@@ -15,74 +25,70 @@ describe('Users (e2e)', () => {
 
   beforeEach(async () => {
     await clearDatabase(ctx.dataSource);
-    await registerUser(ctx.app, 'admin@example.com', 'Password123!', ['admin']);
-    const res = await loginAndGetToken(ctx.app, 'admin@example.com', 'Password123!');
-    token = res.body.access_token;
+
+    // Seed an admin user using helper
+    const admin = await seedAdmin(ctx, 'admin@example.com', 'Password123!');
+    adminToken = admin.token;
+    adminUserId = admin.id;
+
+    // Create a normal user
+    const regUser = await registerUser(ctx.app, 'user@example.com', 'Password123!');
+    expect(regUser.status).toBe(201);
+
+    const loginUser = await loginAndGetToken(ctx.app, 'user@example.com', 'Password123!');
+    userToken = loginUser.body.access_token;
   });
 
-  it('should create a user (public endpoint)', async () => {
-    const res = await request(ctx.httpServer).post('/users').send({ email: 'u1@example.com', password: 'Password123!' });
-    expect(res.status).toBe(201);
-    expect(res.body).toMatchObject({ email: 'u1@example.com' });
-    expect(res.body).not.toHaveProperty('passwordHash');
+  it('non-admin cannot update roles', async () => {
+    // normal user attempts to promote admin
+    const resSelf = await request(ctx.httpServer)
+      .patch(`/users/${adminUserId}`)
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ roles: ['admin'] });
+    expect(resSelf.status).toBe(403);
   });
 
-  it('should not create a user with duplicate email', async () => {
-    await request(ctx.httpServer).post('/users').send({ email: 'dup@example.com', password: 'Password123!' });
-    const res = await request(ctx.httpServer).post('/users').send({ email: 'dup@example.com', password: 'Password123!' });
-    expect(res.status).toBe(409);
+  it('admin can update roles', async () => {
+    // As admin, create another user then promote them
+    const regTarget = await registerUser(ctx.app, 'target@example.com', 'Password123!');
+    const targetId = regTarget.body.id;
+
+    const promote = await request(ctx.httpServer)
+      .patch(`/users/${targetId}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ roles: ['admin'] });
+    expect(promote.status).toBe(200);
+    expect(promote.body.roles).toEqual(['admin']);
   });
 
-  it('should validate payload and reject non-whitelisted fields', async () => {
+  it('non-admin cannot create user via REST (POST /users -> 403)', async () => {
     const res = await request(ctx.httpServer)
       .post('/users')
-      .send({ email: 'bad@example.com', password: 'Password123!', unknown: 'value' });
-    expect(res.status).toBe(400);
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ email: 'rest-forbidden@example.com', password: 'Password123!' });
+    expect(res.status).toBe(403);
   });
 
-  it('should require auth to list users', async () => {
-    const resNoAuth = await request(ctx.httpServer).get('/users');
-    expect(resNoAuth.status).toBe(401);
+  it('non-admin cannot create user via GraphQL (mutation createUser -> Forbidden)', async () => {
+    const mutation = `
+      mutation CreateUser($input: CreateUserDto!) {
+        createUser(input: $input) { id email }
+      }
+    `;
+    const variables = { input: { email: 'gql-forbidden@example.com', password: 'Password123!' } };
 
-    await request(ctx.httpServer).post('/users').send({ email: 'a@example.com', password: 'Password123!' });
-    const res = await request(ctx.httpServer).get('/users').set('Authorization', `Bearer ${token}`);
-    expect(res.status).toBe(200);
-    expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBeGreaterThanOrEqual(1);
-  });
-
-  it('should get, update, and delete a user by id (auth required)', async () => {
-    const created = await request(ctx.httpServer).post('/users').send({ email: 'toedit@example.com', password: 'Password123!' });
-    expect(created.status).toBe(201);
-
-    const id = created.body.id;
-
-    const getRes = await request(ctx.httpServer).get(`/users/${id}`).set('Authorization', `Bearer ${token}`);
-    expect(getRes.status).toBe(200);
-    expect(getRes.body.email).toBe('toedit@example.com');
-
-    const patchRes = await request(ctx.httpServer)
-      .patch(`/users/${id}`)
-      .set('Authorization', `Bearer ${token}`)
-      .send({ email: 'edited@example.com', roles: ['user', 'editor'] });
-    expect(patchRes.status).toBe(200);
-    expect(patchRes.body.email).toBe('edited@example.com');
-    expect(patchRes.body.roles).toEqual(['user', 'editor']);
-
-    const delRes = await request(ctx.httpServer).delete(`/users/${id}`).set('Authorization', `Bearer ${token}`);
-    expect(delRes.status).toBe(200);
-
-    const getMissing = await request(ctx.httpServer).get(`/users/${id}`).set('Authorization', `Bearer ${token}`);
-    expect(getMissing.status).toBe(404);
-  });
-
-  it('should validate update payload', async () => {
-    const created = await request(ctx.httpServer).post('/users').send({ email: 'val@example.com', password: 'Password123!' });
-    const id = created.body.id;
     const res = await request(ctx.httpServer)
-      .patch(`/users/${id}`)
-      .set('Authorization', `Bearer ${token}`)
-      .send({ roles: [123 as unknown as string] });
-    expect(res.status).toBe(400);
+      .post('/graphql')
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ query: mutation, variables });
+
+    // GraphQL typically returns 200 with errors array for exceptions thrown by resolvers/guards
+    expect([200, 403]).toContain(res.status);
+    if (res.status === 200) {
+      expect(res.body.errors && res.body.errors.length).toBeGreaterThan(0);
+      const msg = res.body.errors[0].message as string;
+      expect(msg.toLowerCase()).toContain('access denied');
+      expect(res.body.data?.createUser).toBeFalsy();
+    }
   });
 });

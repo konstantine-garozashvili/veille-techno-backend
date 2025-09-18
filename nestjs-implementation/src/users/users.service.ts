@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -21,7 +21,7 @@ export class UsersService {
     const user = this.usersRepo.create({
       email: dto.email,
       passwordHash,
-      roles: dto.roles?.length ? dto.roles : ['user'],
+      roles: ['user'],
     });
     const saved = await this.usersRepo.save(user);
     // Exclude passwordHash from return
@@ -54,7 +54,14 @@ export class UsersService {
       user.passwordHash = await bcrypt.hash(dto.password, 10);
     }
     if (dto.email) user.email = dto.email;
-    if (dto.roles) user.roles = dto.roles;
+
+    // Enforce single role if roles provided
+    if (dto.roles) {
+      if (!Array.isArray(dto.roles) || dto.roles.length !== 1) {
+        throw new BadRequestException('Exactly one role must be provided');
+      }
+      user.roles = dto.roles;
+    }
 
     const saved = await this.usersRepo.save(user);
     const { passwordHash, ...safe } = saved;
