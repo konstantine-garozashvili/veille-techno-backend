@@ -57,7 +57,50 @@ Documentation API
 - Swagger UI: /api (local: http://localhost:3000/api, Docker: http://localhost:3001/api)
 - OpenAPI JSON: /api-json
 - Détails des endpoints REST: voir docs/API.md
-- GraphQL: /graphql (local: 3000, Docker: 3001). Ajouter Authorization: Bearer <token>.
+- GraphQL: /graphql (local: http://localhost:3000/graphql, Docker: http://localhost:3001/graphql). Ajouter l’en-tête Authorization: Bearer <token>.
+
+  Détails GraphQL
+  - Authentification: récupérer un token via POST /auth/login, puis l’ajouter en Authorization: Bearer <token>.
+  - Explorateur: l’Apollo Sandbox est activé en développement et accessible directement sur l’URL /graphql.
+  - Exemples de requêtes (schéma réel dans l’explorateur):
+
+    Exemple – Lister les listes
+    ```graphql
+    query {
+      lists { id title }
+    }
+    ```
+
+    Exemple – Créer une liste
+    ```graphql
+    mutation {
+      createList(input: { title: "Backlog" }) { id title }
+    }
+    ```
+
+    Exemple – Créer une carte dans une liste
+    ```graphql
+    mutation CreateCard($listId: String!) {
+      createCard(listId: $listId, input: { title: "Setup CI", description: "Configurer la CI", position: 1 }) {
+        id title position
+      }
+    }
+    ```
+
+    Exemple – Lister les cartes d’une liste
+    ```graphql
+    query Cards($listId: String!) {
+      cards(listId: $listId) { id title position }
+    }
+    ```
+
+    Exemple – Supprimer une liste ou une carte
+    ```graphql
+    mutation Remove($listId: String!, $cardId: String!) {
+      removeList(id: $listId)
+      removeCard(listId: $listId, cardId: $cardId)
+    }
+    ```
 
 Base de données & pgAdmin
 - PostgreSQL: localhost:5432 (user: kanban_user, db: kanban_api)
