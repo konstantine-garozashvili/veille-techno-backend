@@ -2,6 +2,7 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:15
+    container_name: kanban-postgres
     environment:
       POSTGRES_DB: kanban_api
       POSTGRES_USER: kanban_user
@@ -13,12 +14,17 @@ services:
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - kanban-network
+    labels:
+      - "traefik.enable=false"
+      - "description=PostgreSQL Database Server"
+      - "port.description=PostgreSQL accessible on localhost:5432"
 
   # NestJS Implementation
   nestjs-api:
     build:
       context: ./nestjs-implementation
       dockerfile: Dockerfile
+    container_name: kanban-nestjs-api
     ports:
       - "3001:3000"
     env_file:
@@ -37,10 +43,16 @@ services:
       - /app/node_modules
     networks:
       - kanban-network
+    labels:
+      - "traefik.enable=false"
+      - "description=NestJS Kanban API"
+      - "port.description=API accessible on http://localhost:3001"
+      - "swagger.url=http://localhost:3001/api"
 
   # pgAdmin for PostgreSQL visualization
   pgadmin:
     image: dpage/pgadmin4:8
+    container_name: kanban-pgadmin
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@example.com
       PGADMIN_DEFAULT_PASSWORD: admin
@@ -63,6 +75,12 @@ services:
       chmod 600 /var/lib/pgadmin/pgpass && \
       chown 5050:5050 /var/lib/pgadmin/pgpass && \
       /entrypoint.sh"
+    labels:
+      - "traefik.enable=false"
+      - "description=pgAdmin Database Management"
+      - "port.description=pgAdmin accessible on http://localhost:5050"
+      - "login.email=admin@example.com"
+      - "login.password=admin"
 
 volumes:
   postgres_data:

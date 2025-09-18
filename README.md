@@ -28,13 +28,20 @@ Démarrage rapide
 
 2) Docker Compose (recommandé)
 - Depuis la racine: 
-  - docker compose up -d postgres nestjs-api pgadmin
-- Accès:
-  - API NestJS: http://localhost:3001/
-  - Swagger: http://localhost:3001/api
-  - pgAdmin: http://localhost:5050 (email: admin@example.com, mdp: admin)
-- Arrêt: docker compose stop
-- Nettoyage: docker compose down
+  - **Méthode simple**: `docker compose up -d`
+  - **Méthode avec affichage des ports**: `./show-ports.sh` (Linux/Git Bash) ou `powershell -File show-ports.ps1` (Windows)
+  
+- **Services disponibles** :
+  - 🌐 **API NestJS**: http://localhost:3001
+  - 📖 **Swagger**: http://localhost:3001/api  
+  - 🎮 **GraphQL Playground**: http://localhost:3001/graphql
+  - 🗄️ **PostgreSQL**: localhost:5432 (kanban_user/kanban_password)
+  - 🔧 **pgAdmin**: http://localhost:5050 (admin@example.com/admin)
+
+- **Commandes utiles**:
+  - Arrêt: `docker compose stop`
+  - Nettoyage: `docker compose down`
+  - Logs: `docker compose logs -f`
 
 3) Exécution locale (sans Docker)
 - cd nestjs-implementation
