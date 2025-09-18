@@ -1,13 +1,17 @@
-import { Resolver, Mutation, Args } from '@nestjs/graphql';
+import { Resolver, Mutation, Args, Context } from '@nestjs/graphql';
+import { UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { GqlAuthGuard } from './guards/gql-auth.guard';
+import { TokenBlacklistService } from './token-blacklist.service';
 
 @Resolver()
 export class AuthResolver {
   constructor(
     private readonly authService: AuthService,
     private readonly usersService: UsersService,
+    private readonly tokenBlacklistService: TokenBlacklistService,
   ) {}
 
   @Mutation(() => String, { description: 'Register a new user and return a JWT access token' })
@@ -24,5 +28,19 @@ export class AuthResolver {
   ): Promise<string> {
     const { access_token } = await this.authService.login(email, password);
     return access_token;
+  }
+
+  @Mutation(() => String, { description: 'Logout and invalidate JWT token' })
+  @UseGuards(GqlAuthGuard)
+  async logout(@Context() context: any): Promise<string> {
+    const request = context.req;
+    const authHeader = request.headers.authorization;
+    const token = this.tokenBlacklistService.extractTokenFromHeader(authHeader);
+    
+    if (token) {
+      this.tokenBlacklistService.blacklistToken(token);
+    }
+    
+    return 'Successfully logged out';
   }
 }
