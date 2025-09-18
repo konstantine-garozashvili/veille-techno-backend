@@ -1,0 +1,90 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Card {
+  createdAt: DateTime!
+  description: String
+  id: ID!
+  position: Int!
+  title: String!
+  updatedAt: DateTime!
+}
+
+input CreateCardDto {
+  description: String
+  position: Int
+  title: String!
+}
+
+input CreateListDto {
+  title: String!
+}
+
+input CreateUserDto {
+  email: String!
+  password: String!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type List {
+  createdAt: DateTime!
+  id: ID!
+  title: String!
+  updatedAt: DateTime!
+}
+
+type Mutation {
+  createCard(input: CreateCardDto!, listId: String!): Card!
+  createList(input: CreateListDto!): List!
+  createUser(input: CreateUserDto!): User!
+
+  """Login and return a JWT access token"""
+  login(email: String!, password: String!): String!
+
+  """Register a new user and return a JWT access token"""
+  register(input: CreateUserDto!): String!
+  removeCard(cardId: String!, listId: String!): Boolean!
+  removeList(id: String!): Boolean!
+  removeUser(id: String!): Boolean!
+  updateCard(cardId: String!, input: UpdateCardDto!, listId: String!): Card!
+  updateList(id: String!, input: UpdateListDto!): List!
+  updateUser(id: String!, input: UpdateUserDto!): User!
+}
+
+type Query {
+  card(cardId: String!, listId: String!): Card!
+  cards(listId: String!): [Card!]!
+  list(id: String!): List!
+  lists: [List!]!
+  user(id: String!): User!
+  users: [User!]!
+}
+
+input UpdateCardDto {
+  description: String
+  position: Int
+  title: String
+}
+
+input UpdateListDto {
+  title: String
+}
+
+input UpdateUserDto {
+  email: String
+  password: String
+  roles: [String!]
+}
+
+type User {
+  createdAt: DateTime!
+  email: String!
+  id: ID!
+  roles: [String!]!
+  updatedAt: DateTime!
+}
