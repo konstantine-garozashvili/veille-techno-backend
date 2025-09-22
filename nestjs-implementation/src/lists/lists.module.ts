@@ -4,9 +4,10 @@ import { ListsService } from './lists.service';
 import { ListsController } from './lists.controller';
 import { List } from './list.entity';
 import { ListsResolver } from './lists.resolver';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([List])],
+  imports: [TypeOrmModule.forFeature([List]), AuthModule],
   controllers: [ListsController],
   providers: [ListsService, ListsResolver],
   exports: [ListsService, TypeOrmModule],
