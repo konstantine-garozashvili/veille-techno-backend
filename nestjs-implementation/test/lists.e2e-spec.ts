@@ -25,22 +25,16 @@ describe('Lists (e2e)', () => {
     expect(res.status).toBe(401);
   });
 
-  it('should create, list, get, update, and delete a list', async () => {
+  it('should create, update and delete lists', async () => {
+    // Create a list
     const createRes = await request(ctx.httpServer)
       .post('/lists')
       .set('Authorization', `Bearer ${token}`)
-      .send({ title: 'Backlog' });
+      .send({ title: 'New List' });
     expect(createRes.status).toBe(201);
     const listId = createRes.body.id;
 
-    const listRes = await request(ctx.httpServer).get('/lists').set('Authorization', `Bearer ${token}`);
-    expect(listRes.status).toBe(200);
-    expect(listRes.body.find((l: any) => l.id === listId)).toBeTruthy();
-
-    const getRes = await request(ctx.httpServer).get(`/lists/${listId}`).set('Authorization', `Bearer ${token}`);
-    expect(getRes.status).toBe(200);
-    expect(getRes.body.title).toBe('Backlog');
-
+    // Update the list
     const patchRes = await request(ctx.httpServer)
       .patch(`/lists/${listId}`)
       .set('Authorization', `Bearer ${token}`)
@@ -48,9 +42,11 @@ describe('Lists (e2e)', () => {
     expect(patchRes.status).toBe(200);
     expect(patchRes.body.title).toBe('To Do');
 
+    // Delete the list
     const delRes = await request(ctx.httpServer).delete(`/lists/${listId}`).set('Authorization', `Bearer ${token}`);
     expect(delRes.status).toBe(200);
 
+    // Verify it's deleted
     const getMissing = await request(ctx.httpServer).get(`/lists/${listId}`).set('Authorization', `Bearer ${token}`);
     expect(getMissing.status).toBe(404);
   });

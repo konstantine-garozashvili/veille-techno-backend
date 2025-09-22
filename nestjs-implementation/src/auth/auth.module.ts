@@ -8,6 +8,7 @@ import { AuthController } from './auth.controller';
 import { AuthResolver } from './auth.resolver';
 import { ConfigService } from '@nestjs/config';
 import { TokenBlacklistService } from './token-blacklist.service';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -21,8 +22,8 @@ import { TokenBlacklistService } from './token-blacklist.service';
       }),
     }),
   ],
-  providers: [AuthService, JwtStrategy, AuthResolver, TokenBlacklistService],
+  providers: [AuthService, JwtStrategy, AuthResolver, TokenBlacklistService, JwtAuthGuard],
   controllers: [AuthController],
-  exports: [AuthService, TokenBlacklistService],
+  exports: [AuthService, TokenBlacklistService, JwtAuthGuard],
 })
 export class AuthModule {}

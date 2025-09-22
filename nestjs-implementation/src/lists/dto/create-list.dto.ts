@@ -5,7 +5,12 @@ import { InputType, Field } from '@nestjs/graphql';
 @InputType()
 export class CreateListDto {
   @Field()
-  @ApiProperty({ description: 'List title', example: 'Backlog', minLength: 1 })
+  @ApiProperty({ 
+    description: 'Title of the Kanban list (e.g., "To Do", "In Progress", "Done")',
+    example: 'À faire',
+    minLength: 1,
+    maxLength: 100
+  })
   @IsString()
   @MinLength(1)
   title!: string;

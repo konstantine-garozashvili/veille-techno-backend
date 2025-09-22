@@ -46,6 +46,9 @@ type Mutation {
   """Login and return a JWT access token"""
   login(email: String!, password: String!): String!
 
+  """Logout and invalidate JWT token"""
+  logout: String!
+
   """Register a new user and return a JWT access token"""
   register(input: CreateUserDto!): String!
   removeCard(cardId: String!, listId: String!): Boolean!
