@@ -5,9 +5,10 @@ import { CardsController } from './cards.controller';
 import { Card } from './card.entity';
 import { List } from '../lists/list.entity';
 import { CardsResolver } from './cards.resolver';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Card, List])],
+  imports: [TypeOrmModule.forFeature([Card, List]), AuthModule],
   controllers: [CardsController],
   providers: [CardsService, CardsResolver],
   exports: [CardsService, TypeOrmModule],
