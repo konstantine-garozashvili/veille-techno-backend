@@ -22,11 +22,11 @@ export async function bootstrapTestApp(): Promise<TestContext> {
   const app = moduleFixture.createNestApplication();
   await app.init();
 
-  const dataSource = app.get(DataSource);
+  const dataSource = moduleFixture.get<DataSource>(DataSource);
 
-  // Ensure proper teardown: when tests call app.close(), also destroy the DataSource to avoid open handles
+  // Override the close method to ensure proper cleanup
   const originalClose = app.close.bind(app);
-  (app as any).close = async () => {
+  app.close = async () => {
     try {
       await originalClose();
     } finally {

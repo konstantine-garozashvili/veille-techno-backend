@@ -1,5 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, Post, UsePipes, ValidationPipe, UseGuards, Req } from '@nestjs/common';
-import { ApiBody, ApiOkResponse, ApiTags, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBody, ApiOkResponse, ApiTags, ApiBearerAuth, ApiBadRequestResponse, ApiUnauthorizedResponse, ApiConflictResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
@@ -22,7 +22,33 @@ export class AuthController {
   @Post('register')
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @ApiBody({ type: CreateUserDto })
-  @ApiOkResponse({ description: 'Register a new user', type: UserResponseDto })
+  @ApiOkResponse({ 
+    description: 'Register a new user', 
+    type: UserResponseDto,
+    example: {
+      id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
+      email: 'john.doe@company.com',
+      roles: ['user'],
+      createdAt: '2024-01-15T10:30:00.000Z',
+      updatedAt: '2024-01-15T10:30:00.000Z'
+    }
+  })
+  @ApiBadRequestResponse({
+    description: 'Validation failed',
+    example: {
+      message: ['email must be a valid email', 'password must be longer than or equal to 8 characters'],
+      error: 'Bad Request',
+      statusCode: 400
+    }
+  })
+  @ApiConflictResponse({
+    description: 'User already exists',
+    example: {
+      message: 'Un utilisateur avec cet email existe déjà',
+      error: 'Conflict',
+      statusCode: 409
+    }
+  })
   async register(@Body() dto: CreateUserDto) {
     return this.usersService.create(dto);
   }
@@ -31,7 +57,34 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @ApiBody({ type: LoginDto })
-  @ApiOkResponse({ description: 'Login and receive JWT', type: LoginResponseDto })
+  @ApiOkResponse({ 
+    description: 'Login and receive JWT', 
+    type: LoginResponseDto,
+    example: {
+      access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+      user: {
+        id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
+        email: 'admin@example.com',
+        roles: ['admin']
+      }
+    }
+  })
+  @ApiBadRequestResponse({
+    description: 'Validation failed',
+    example: {
+      message: ['email must be a valid email', 'password must be longer than or equal to 8 characters'],
+      error: 'Bad Request',
+      statusCode: 400
+    }
+  })
+  @ApiUnauthorizedResponse({
+    description: 'Invalid credentials',
+    example: {
+      message: 'Identifiants invalides',
+      error: 'Unauthorized',
+      statusCode: 401
+    }
+  })
   async login(@Body() dto: LoginDto) {
     return this.authService.login(dto.email, dto.password);
   }
@@ -40,7 +93,12 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
-  @ApiOkResponse({ description: 'Logout and invalidate JWT token' })
+  @ApiOkResponse({ 
+    description: 'Logout and invalidate JWT token',
+    example: {
+      message: 'Successfully logged out'
+    }
+  })
   async logout(@Req() req: Request) {
     const authHeader = req.headers.authorization;
     const token = this.tokenBlacklistService.extractTokenFromHeader(authHeader as string);

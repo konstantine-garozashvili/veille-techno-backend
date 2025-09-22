@@ -7,7 +7,12 @@ import { InputType, Field } from '@nestjs/graphql';
 @InputType()
 export class UpdateListDto extends PartialType(CreateListDto) {
   @Field({ nullable: true })
-  @ApiPropertyOptional({ description: 'List title', example: 'To Do', minLength: 1 })
+  @ApiPropertyOptional({ 
+    description: 'Updated title for the Kanban list',
+    example: 'En cours',
+    minLength: 1,
+    maxLength: 100
+  })
   @IsOptional()
   @IsString()
   @MinLength(1)

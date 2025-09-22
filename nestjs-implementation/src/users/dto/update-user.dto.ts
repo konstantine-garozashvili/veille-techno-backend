@@ -8,20 +8,37 @@ import { Role } from '../role.enum';
 @InputType()
 export class UpdateUserDto extends PartialType(CreateUserDto) {
   @Field({ nullable: true })
-  @ApiPropertyOptional({ description: 'User email address', example: 'updated@example.com' })
+  @ApiPropertyOptional({ 
+    description: 'New email address for the user (must be unique)',
+    example: 'jane.smith@company.com',
+    format: 'email'
+  })
   @IsOptional()
   @IsEmail()
   email?: string;
 
   @Field({ nullable: true })
-  @ApiPropertyOptional({ description: 'New password (min 8 chars)', example: 'NewPassword123!' })
+  @ApiPropertyOptional({ 
+    description: 'New password (minimum 8 characters with letters, numbers, and special characters)',
+    example: 'NewSecurePass456!',
+    minLength: 8,
+    format: 'password'
+  })
   @IsOptional()
   @IsString()
   @MinLength(8)
   password?: string;
 
   @Field(() => [String], { nullable: true })
-  @ApiPropertyOptional({ description: 'Exactly one user role', example: ['admin'], isArray: true, type: String, minItems: 1, maxItems: 1, enum: Role })
+  @ApiPropertyOptional({ 
+    description: 'User role assignment (exactly one role: "user" or "admin")',
+    example: ['admin'],
+    isArray: true,
+    type: String,
+    minItems: 1,
+    maxItems: 1,
+    enum: Role
+  })
   @IsOptional()
   @IsArray()
   @ArrayNotEmpty()

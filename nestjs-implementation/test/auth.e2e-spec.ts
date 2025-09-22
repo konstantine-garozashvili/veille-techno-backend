@@ -34,9 +34,9 @@ describe('Auth (e2e)', () => {
     expect(res.status).toBe(400);
   });
 
-  it('should login with valid credentials and get JWT', async () => {
+  it('should login successfully with valid credentials', async () => {
     await registerUser(ctx.app, 'login@example.com');
-    const res = await loginAndGetToken(ctx.app, 'login@example.com');
+    const res = await request(ctx.httpServer).post('/auth/login').send({ email: 'login@example.com', password: 'Password123!' });
     expect(res.status).toBe(200);
     expect(res.body).toHaveProperty('access_token');
     expect(res.body).toHaveProperty('user');
@@ -50,9 +50,6 @@ describe('Auth (e2e)', () => {
 
   it('should reject login for non-existent user', async () => {
     const res = await request(ctx.httpServer).post('/auth/login').send({ email: 'nouser@example.com', password: 'Password123!' });
-    expect([401, 404, 200]).toContain(res.status); // Should be 401 by service; accept 401
-    if (res.status === 200) {
-      fail('Login should not succeed for non-existent user');
-    }
+    expect([401, 404]).toContain(res.status); // Should be 401 or 404 for non-existent user
   });
 });

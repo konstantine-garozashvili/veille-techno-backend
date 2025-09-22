@@ -10,7 +10,20 @@ async function bootstrap() {
   const swaggerConfig = new DocumentBuilder()
     .setTitle('API Kanban — Documentation')
     .setDescription(
-      "Documentation de l'API Kanban. Utilisez cette interface pour explorer les endpoints, leurs paramètres et les réponses attendues."
+      `Documentation de l'API Kanban. Utilisez cette interface pour explorer les endpoints, leurs paramètres et les réponses attendues.
+
+🔧 **Compte administrateur de test :**
+- Email : admin@example.com
+- Mot de passe : Password123!
+- Rôles : ['admin']
+
+📝 **Instructions de test :**
+1. Utilisez les identifiants ci-dessus pour vous connecter via /auth/login
+2. Copiez le token JWT retourné
+3. Cliquez sur "Authorize" en haut à droite et collez le token
+4. Vous pouvez maintenant tester tous les endpoints protégés
+
+⚠️ **Note :** Ce compte est créé automatiquement au démarrage de l'application pour faciliter les tests.`
     )
     .setVersion('1.0.0')
     .addBearerAuth(
